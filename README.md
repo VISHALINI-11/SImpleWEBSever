@@ -1,6 +1,6 @@
 # SImpleWEBSever
 # EX01 Developing a Simple Webserver
-## Date:29.09.2026
+## Date:02.10.2026
 
 ## AIM:
 To develop a simple webserver to serve html pages and display the Device Specifications of your Laptop.
@@ -37,39 +37,78 @@ Start the server script and check for errors.
 Open a browser and navigate to http://127.0.0.1:8000 (or the assigned port).
 
 ## PROGRAM:
-"""
-Simple Web Server
-Serves an HTML page listing the TCP/IP Protocol Suite.
-Runs on 127.0.0.1:8000
-"""
-
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import platform
+import socket
 import os
 
-HOST = "127.0.0.1"
-PORT = 8000
+NAME = "VISHALINI A"
+REG_NO = "26018289"
 
-class Handler(SimpleHTTPRequestHandler):
+def get_specs():
+    return {
+        "Device Name": socket.gethostname(),
+        "Operating System": f"{platform.system()} {platform.release()}",
+        "OS Version": platform.version(),
+        "Architecture": platform.machine(),
+        "Processor": platform.processor() or "Unknown",
+        "CPU Cores": os.cpu_count(),
+        "Python Version": platform.python_version(),
+    }
+
+def build_page():
+    rows = "".join(
+        f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in get_specs().items()
+    )
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Device Specifications</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; background: #f2f5f9; text-align: center; }}
+    table {{ margin: 30px auto; border-collapse: collapse; background: #fff; }}
+    th, td {{ border: 1px solid #ccc; padding: 10px 20px; text-align: left; }}
+    th {{ background: #2c3e50; color: #fff; }}
+  </style>
+</head>
+<body>
+  <h1>Laptop Device Specifications</h1>
+  <h3>Name: {NAME} | Register No: {REG_NO}</h3>
+  <table>{rows}</table>
+</body>
+</html>"""
+
+class MyHandler(BaseHTTPRequestHandler):
+    def send_html(self, content, status=200):
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(content.encode("utf-8"))
+
     def do_GET(self):
-        if self.path == "/" or self.path == "":
-            self.path = "/index.html"
-        return super().do_GET()
+        print("Request:", self.path)
+        if self.path == "/specs":
+            self.send_html(build_page())
+            return
+        name = "index.html" if self.path == "/" else self.path.lstrip("/")
+        name = os.path.basename(name)
+        if name.endswith(".html") and os.path.exists(name):
+            with open(name, encoding="utf-8") as f:
+                self.send_html(f.read())
+        else:
+            self.send_html("<h1>404 - Page Not Found</h1>", 404)
 
-if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    server = HTTPServer((HOST, PORT), Handler)
-    print(f"Serving on http://{HOST}:{PORT}  (Press Ctrl+C to stop)")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\nServer stopped.")
-        server.server_close()
-
+server_address = ("", 8000)
+httpd = HTTPServer(server_address, MyHandler)
+print("My webserver is running on http://127.0.0.1:8000 ...")
+httpd.serve_forever()
 
 ## OUTPUT:
+![alt text](output1.png)
+
 ![alt text](output.png)
 
-![alt text](outputprogram.png)
-
+![alt text](terminalcode.png)
 ## RESULT:
 The program for implementing simple webserver is executed successfully.
