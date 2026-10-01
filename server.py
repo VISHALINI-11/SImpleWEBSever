@@ -1,4 +1,4 @@
-'''python
+"""python
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import platform
 import socket
@@ -65,4 +65,4 @@ server_address = ("", 8000)
 httpd = HTTPServer(server_address, MyHandler)
 print("My webserver is running on http://127.0.0.1:8000 ...")
 httpd.serve_forever()
-'''
+"""
